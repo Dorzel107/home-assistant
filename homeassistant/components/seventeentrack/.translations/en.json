@@ -1,0 +1,16 @@
+{
+    "config": {
+        "error": {
+            "tracking_number_exists": "Tracking number already exists"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "tracking_number": "Tracking Number"
+                },
+                "title": "Define package parameters"
+            }
+        },
+        "title": "17tracking.net Package"
+    }
+}
