@@ -30,6 +30,15 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
         """Handle a flow start."""
         errors = {}
 
+        if user_input is not None:
+            key = slugify(user_input[CONF_TRACKING_NUMBER])
+            if key not in configured_tracking_numbers(self.hass):
+                return self.async_create_entry(
+                    title=user_input[CONF_TRACKING_NUMBER],
+                    data=user_input,
+                )
+            errors['base'] = 'name_exists'
+
         return self.async_show_form(
             step_id='init',
             data_schema=vol.Schema({
