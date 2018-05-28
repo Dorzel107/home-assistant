@@ -8,6 +8,13 @@
           "setup_method": "Method"
         }
       },
+      "account": {
+        "title": "Input 17track.net account info",
+        "data": {
+          "email": "Email Address",
+          "password": "Password"
+        }
+      },
       "ad_hoc": {
         "title": "Input the tracking number:",
         "data": {
@@ -16,7 +23,9 @@
       }
     },
     "error": {
-      "tracking_number_exists": "Tracking number already exists"
+      "account_exists": "Account already configured",
+      "tracking_number_exists": "Tracking number already exists",
+      "unknown_method": "Unknown method"
     }
   }
 }

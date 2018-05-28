@@ -1,9 +1,18 @@
 {
     "config": {
         "error": {
-            "tracking_number_exists": "Tracking number already exists"
+            "account_exists": "Account already configured",
+            "tracking_number_exists": "Tracking number already exists",
+            "unknown_method": "Unknown method"
         },
         "step": {
+            "account": {
+                "data": {
+                    "email": "Email Address",
+                    "password": "Password"
+                },
+                "title": "Input 17track.net account info"
+            },
             "ad_hoc": {
                 "data": {
                     "tracking_number": "Tracking Number"
@@ -12,7 +21,7 @@
             },
             "init": {
                 "data": {
-                    "setup_method": "Method Type"
+                    "setup_method": "Method"
                 },
                 "title": "How would you like to add packages?"
             }

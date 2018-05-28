@@ -7,8 +7,8 @@ https://home-assistant.io/components/sensor.seventeen_track/
 from logging import getLogger
 
 from homeassistant.components.seventeentrack.const import (
-    CONF_DATA_OBJ, CONF_TRACKING_NUMBER, DATA_EVENTS, DATA_SUBSCRIBERS,
-    DATA_TOPIC_NEW, DATA_TOPIC_UPDATE, DEFAULT_ATTRIBUTION, DOMAIN)
+    CONF_DATA_OBJ, CONF_TRACKING_NUMBER, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
+    DEFAULT_ATTRIBUTION, DOMAIN)
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LOCATION
 from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
@@ -29,19 +29,10 @@ async def setup_platform(hass, config, add_devices, discovery_info=None):
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the deCONZ sensors."""
-
-    @callback
-    def async_add_sensor(entry):
-        """Add a new 17track.net sensor."""
-        async_add_devices([
-            PackageSensor(hass.data[DOMAIN][CONF_DATA_OBJ],
-                          entry.data[CONF_TRACKING_NUMBER])
-        ], True)
-
-    hass.data[DOMAIN][DATA_SUBSCRIBERS].append(
-        async_dispatcher_connect(hass, DATA_TOPIC_NEW, async_add_sensor))
-
-    async_add_sensor(config_entry)
+    async_add_devices([
+        PackageSensor(hass.data[DOMAIN][CONF_DATA_OBJ],
+                      config_entry.data[CONF_TRACKING_NUMBER])
+    ], True)
 
 
 class PackageSensor(Entity):
@@ -87,17 +78,23 @@ class PackageSensor(Entity):
             """Update the state."""
             self.async_schedule_update_ha_state(True)
 
-        self.hass.data[DOMAIN][DATA_EVENTS].append(
-            async_dispatcher_connect(self.hass, DATA_TOPIC_UPDATE,
-                                     update_data))
+        self.hass.data[DOMAIN][DATA_SUBSCRIBERS][
+            self._tracking_number] = async_dispatcher_connect(
+                self.hass, DATA_TOPIC_UPDATE, update_data)
 
     def update(self):
         """Update the sensor's state data."""
         # package = self._seventeentrack.packages[self._tracking_number]
-        [package] = [
-            p for p in self._seventeentrack.packages
-            if p.tracking_number == self._tracking_number
-        ]
+        try:
+            [package] = [
+                p for p in self._seventeentrack.ad_hoc_packages +
+                self._seventeentrack.account_packages
+                if p.tracking_number == self._tracking_number
+            ]
+        except ValueError:
+            _LOGGER.error('No data for tracking number: %s',
+                          self._tracking_number)
+            return
 
         self._state = package.status
         self._attrs.update({

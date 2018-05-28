@@ -3,6 +3,7 @@
 import voluptuous as vol
 
 from homeassistant import config_entries, data_entry_flow
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.util import slugify
 
@@ -10,14 +11,16 @@ from .const import CONF_TRACKING_NUMBER, DOMAIN
 
 CONF_SETUP_METHOD = 'setup_method'
 
-SETUP_TYPES = ['Via Account', 'Ad Hoc']
+SETUP_TYPES = ['Account', 'Ad Hoc']
 
 
 @callback
-def configured_tracking_numbers(hass):
+def configured_entries(hass):
     """Return a set of the configured hosts."""
-    return set((slugify(entry.data[CONF_TRACKING_NUMBER])) for
-               entry in hass.config_entries.async_entries(DOMAIN))
+    return set(
+        slugify(
+            entry.data.get(CONF_EMAIL) or entry.data[CONF_TRACKING_NUMBER])
+        for entry in hass.config_entries.async_entries(DOMAIN))
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -32,15 +35,41 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
 
     async def async_step_init(self, user_input=None):
         """Handle a flow start."""
+        errors = {}
+
         if user_input is not None:
             if user_input[CONF_SETUP_METHOD] == 'Ad Hoc':
                 return await self.async_step_ad_hoc()
+            return await self.async_step_account()
 
         return self.async_show_form(
             step_id='init',
             data_schema=vol.Schema({
-                vol.Required(CONF_SETUP_METHOD): vol.In(SETUP_TYPES),
+                vol.Required(CONF_SETUP_METHOD):
+                vol.In(SETUP_TYPES),
             }),
+            errors=errors)
+
+    async def async_step_account(self, user_input=None):
+        """Handle an ad hoc package addition."""
+        errors = {}
+
+        if user_input is not None:
+            key = slugify(user_input[CONF_EMAIL])
+            if key not in configured_entries(self.hass):
+                return self.async_create_entry(
+                    title=user_input[CONF_EMAIL],
+                    data=user_input,
+                )
+            errors['base'] = 'account_exists'
+
+        return self.async_show_form(
+            step_id='account',
+            data_schema=vol.Schema({
+                vol.Required(CONF_EMAIL): str,
+                vol.Required(CONF_PASSWORD): str,
+            }),
+            errors=errors,
         )
 
     async def async_step_ad_hoc(self, user_input=None):
@@ -49,7 +78,7 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
 
         if user_input is not None:
             key = slugify(user_input[CONF_TRACKING_NUMBER])
-            if key not in configured_tracking_numbers(self.hass):
+            if key not in configured_entries(self.hass):
                 return self.async_create_entry(
                     title=user_input[CONF_TRACKING_NUMBER],
                     data=user_input,
