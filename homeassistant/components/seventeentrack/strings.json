@@ -1,9 +1,15 @@
 {
   "config": {
-    "title": "17tracking.net Package",
+    "title": "17tracking.net",
     "step": {
       "init": {
-        "title": "Define package parameters",
+        "title": "How would you like to add packages?",
+        "data": {
+          "setup_method": "Method"
+        }
+      },
+      "ad_hoc": {
+        "title": "Input the tracking number:",
         "data": {
           "tracking_number": "Tracking Number"
         }

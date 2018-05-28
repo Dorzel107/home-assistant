@@ -10,11 +10,11 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
 
 from .config_flow import configured_tracking_numbers  # noqa
-from .const import (CONF_DATA_OBJ, CONF_PACKAGES, CONF_TRACKING_NUMBER,
-                    DATA_EVENTS, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
-                    DEFAULT_REFRESH_INTERVAL, DOMAIN)
+from .const import (
+    CONF_DATA_OBJ, CONF_PACKAGES, CONF_TRACKING_NUMBER, DATA_EVENTS,
+    DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE, DEFAULT_REFRESH_INTERVAL, DOMAIN)
 
-REQUIREMENTS = ['py17track==1.0.3']
+REQUIREMENTS = ['py17track==1.1.2']
 _LOGGER = getLogger(__name__)
 
 
@@ -43,17 +43,11 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass, config_entry):
     """Create a new package via a config flow."""
-    from py17track.exceptions import InvalidTrackingNumberError
-
     seventeentrack = hass.data[DOMAIN][CONF_DATA_OBJ]
     seventeentrack.tracking_numbers.append(
         config_entry.data[CONF_TRACKING_NUMBER])
 
-    try:
-        await hass.async_add_job(seventeentrack.update)
-    except InvalidTrackingNumberError:
-        _LOGGER.error('No valid tracking numbers: %s',
-                      seventeentrack.tracking_numbers)
+    await hass.async_add_job(seventeentrack.update)
 
     hass.async_add_job(
         hass.config_entries.async_forward_entry_setup(config_entry, 'sensor'))
@@ -90,11 +84,14 @@ class SeventeenTrack(object):
 
     def update(self):
         """Update the data."""
+        from py17track.exceptions import InvalidTrackingNumberError
+
         if not self.tracking_numbers:
             return
 
-        data = self._client.track(*self.tracking_numbers)
+        self.packages = self._client.track.find(*self.tracking_numbers)
 
-        _LOGGER.debug('New data received: %s', data)
+        _LOGGER.debug('New data received: %s', self.packages)
 
-        self.packages = data
+        if not self.packages:
+            _LOGGER.warning('No valid tracking numbers')

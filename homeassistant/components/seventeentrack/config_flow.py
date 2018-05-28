@@ -8,6 +8,10 @@ from homeassistant.util import slugify
 
 from .const import CONF_TRACKING_NUMBER, DOMAIN
 
+CONF_SETUP_METHOD = 'setup_method'
+
+SETUP_TYPES = ['Via Account', 'Ad Hoc']
+
 
 @callback
 def configured_tracking_numbers(hass):
@@ -28,6 +32,19 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
 
     async def async_step_init(self, user_input=None):
         """Handle a flow start."""
+        if user_input is not None:
+            if user_input[CONF_SETUP_METHOD] == 'Ad Hoc':
+                return await self.async_step_ad_hoc()
+
+        return self.async_show_form(
+            step_id='init',
+            data_schema=vol.Schema({
+                vol.Required(CONF_SETUP_METHOD): vol.In(SETUP_TYPES),
+            }),
+        )
+
+    async def async_step_ad_hoc(self, user_input=None):
+        """Handle an ad hoc package addition."""
         errors = {}
 
         if user_input is not None:
@@ -37,10 +54,10 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
                     title=user_input[CONF_TRACKING_NUMBER],
                     data=user_input,
                 )
-            errors['base'] = 'name_exists'
+            errors['base'] = 'tracking_number_exists'
 
         return self.async_show_form(
-            step_id='init',
+            step_id='ad_hoc',
             data_schema=vol.Schema({
                 vol.Required(CONF_TRACKING_NUMBER): str,
             }),

@@ -93,12 +93,16 @@ class PackageSensor(Entity):
 
     def update(self):
         """Update the sensor's state data."""
-        package = self._seventeentrack.packages[self._tracking_number]
+        # package = self._seventeentrack.packages[self._tracking_number]
+        [package] = [
+            p for p in self._seventeentrack.packages
+            if p.tracking_number == self._tracking_number
+        ]
 
         self._state = package.status
         self._attrs.update({
             ATTR_DESTINATION: package.destination_country,
-            ATTR_INFO: package.info,
+            ATTR_INFO: package.info_text,
             ATTR_LOCATION: package.location,
             ATTR_ORIGIN: package.origin_country,
         })

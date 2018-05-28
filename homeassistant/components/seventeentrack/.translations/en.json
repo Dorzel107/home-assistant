@@ -4,13 +4,19 @@
             "tracking_number_exists": "Tracking number already exists"
         },
         "step": {
-            "init": {
+            "ad_hoc": {
                 "data": {
                     "tracking_number": "Tracking Number"
                 },
-                "title": "Define package parameters"
+                "title": "Input the tracking number:"
+            },
+            "init": {
+                "data": {
+                    "setup_method": "Method Type"
+                },
+                "title": "How would you like to add packages?"
             }
         },
-        "title": "17tracking.net Package"
+        "title": "17tracking.net"
     }
 }
