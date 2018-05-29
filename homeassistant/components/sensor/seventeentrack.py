@@ -7,7 +7,7 @@ https://home-assistant.io/components/sensor.seventeen_track/
 from logging import getLogger
 
 from homeassistant.components.seventeentrack.const import (
-    CONF_DATA_OBJ, CONF_TRACKING_NUMBER, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
+    CONF_TRACKING_NUMBER, DATA_OBJ, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
     DEFAULT_ATTRIBUTION, DOMAIN)
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LOCATION
 from homeassistant.core import callback
@@ -29,10 +29,23 @@ async def setup_platform(hass, config, add_devices, discovery_info=None):
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the deCONZ sensors."""
-    async_add_devices([
-        PackageSensor(hass.data[DOMAIN][CONF_DATA_OBJ],
-                      config_entry.data[CONF_TRACKING_NUMBER])
-    ], True)
+    if config_entry.data.get(CONF_TRACKING_NUMBER):
+        # 1. Ad Hoc
+        async_add_devices([
+            PackageSensor(hass.data[DOMAIN][DATA_OBJ],
+                          config_entry.data[CONF_TRACKING_NUMBER])
+        ], True)
+    else:
+        # 2. Account
+        @callback
+        def async_add_packages(packages):
+            """Add sensors from a 17track.net account."""
+            async_add_devices([
+                PackageSensor(hass.data[DOMAIN][DATA_OBJ],
+                              package.tracking_number) for package in packages
+            ], True)
+
+        async_add_packages(hass.data[DOMAIN][DATA_OBJ].account_packages)
 
 
 class PackageSensor(Entity):
@@ -70,10 +83,10 @@ class PackageSensor(Entity):
         """Return a unique, HASS-friendly identifier for this entity."""
         return self._tracking_number
 
-    @callback
     async def async_added_to_hass(self):
         """Register callbacks."""
 
+        @callback
         def update_data():
             """Update the state."""
             self.async_schedule_update_ha_state(True)
@@ -84,7 +97,6 @@ class PackageSensor(Entity):
 
     def update(self):
         """Update the sensor's state data."""
-        # package = self._seventeentrack.packages[self._tracking_number]
         try:
             [package] = [
                 p for p in self._seventeentrack.ad_hoc_packages +
