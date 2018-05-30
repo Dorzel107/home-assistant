@@ -46,11 +46,9 @@ async def async_setup_entry(hass, config_entry):
     seventeentrack = hass.data[DOMAIN][DATA_OBJ]
 
     if config_entry.data.get(CONF_TRACKING_NUMBER):
-        # 1. Ad Hoc Flow
         seventeentrack.tracking_numbers.append(
             config_entry.data[CONF_TRACKING_NUMBER])
     else:
-        # 2. Account Flow
         await hass.async_add_job(seventeentrack.login,
                                  config_entry.data[CONF_EMAIL],
                                  config_entry.data[CONF_PASSWORD])
@@ -65,24 +63,23 @@ async def async_setup_entry(hass, config_entry):
 
 async def async_unload_entry(hass, config_entry):
     """Unload a config entry."""
+    seventeentrack = hass.data[DOMAIN][DATA_OBJ]
+
     if config_entry.data.get(CONF_TRACKING_NUMBER):
-        # 1. Ad Hoc Flow
         tracking_number = config_entry.data[CONF_TRACKING_NUMBER]
 
         unsub_dispatcher = hass.data[DOMAIN][DATA_SUBSCRIBERS].pop(
             tracking_number)
         unsub_dispatcher()
 
-        hass.data[DOMAIN][DATA_OBJ].tracking_numbers.remove(
-            tracking_number)
+        seventeentrack.tracking_numbers.remove(tracking_number)
     else:
-        # 2. Account Flow
-        for package in hass.data[DOMAIN][DATA_OBJ].account_packages:
+        for package in seventeentrack.account_packages:
             unsub_dispatcher = hass.data[DOMAIN][DATA_SUBSCRIBERS].pop(
                 package.tracking_number)
             unsub_dispatcher()
 
-        hass.data[DOMAIN][DATA_OBJ].logout()
+        seventeentrack.logout()
 
     await hass.config_entries.async_forward_entry_unload(
         config_entry, 'sensor')

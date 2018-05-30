@@ -28,24 +28,19 @@ async def setup_platform(hass, config, add_devices, discovery_info=None):
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
-    """Set up the deCONZ sensors."""
+    """Set up the 17track.net sensors."""
+    seventeentrack = hass.data[DOMAIN][DATA_OBJ]
+
     if config_entry.data.get(CONF_TRACKING_NUMBER):
-        # 1. Ad Hoc
         async_add_devices([
-            PackageSensor(hass.data[DOMAIN][DATA_OBJ],
+            PackageSensor(seventeentrack,
                           config_entry.data[CONF_TRACKING_NUMBER])
         ], True)
     else:
-        # 2. Account
-        @callback
-        def async_add_packages(packages):
-            """Add sensors from a 17track.net account."""
-            async_add_devices([
-                PackageSensor(hass.data[DOMAIN][DATA_OBJ],
-                              package.tracking_number) for package in packages
-            ], True)
-
-        async_add_packages(hass.data[DOMAIN][DATA_OBJ].account_packages)
+        async_add_devices([
+            PackageSensor(seventeentrack, package.tracking_number)
+            for package in seventeentrack.account_packages
+        ], True)
 
 
 class PackageSensor(Entity):

@@ -11,8 +11,6 @@ from .const import CONF_TRACKING_NUMBER, DOMAIN
 
 CONF_SETUP_METHOD = 'setup_method'
 
-SETUP_TYPES = ['Account', 'Ad Hoc']
-
 
 @callback
 def configured_entries(hass):
@@ -46,7 +44,7 @@ class SeventeenTrackFlowHandler(data_entry_flow.FlowHandler):
             step_id='init',
             data_schema=vol.Schema({
                 vol.Required(CONF_SETUP_METHOD):
-                vol.In(SETUP_TYPES),
+                vol.In(['Account', 'Ad Hoc']),
             }),
             errors=errors)
 
