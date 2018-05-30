@@ -4,7 +4,8 @@ Support for package info from 17track.net.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/sensor.seventeentrack/
 """
-from logging import getLogger
+import logging
+from datetime import timedelta
 
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -13,10 +14,12 @@ from homeassistant.helpers.event import async_track_time_interval
 from .config_flow import configured_entries  # noqa
 from .const import (
     CONF_TRACKING_NUMBER, DATA_OBJ, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
-    DEFAULT_REFRESH_INTERVAL, DOMAIN)
+    DOMAIN)
 
 REQUIREMENTS = ['py17track==1.1.3']
-_LOGGER = getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
+
+DEFAULT_REFRESH_INTERVAL = timedelta(hours=6)
 
 
 async def async_setup(hass, config):

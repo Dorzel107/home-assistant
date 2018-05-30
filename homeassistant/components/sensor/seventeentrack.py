@@ -8,7 +8,7 @@ from logging import getLogger
 
 from homeassistant.components.seventeentrack.const import (
     CONF_TRACKING_NUMBER, DATA_OBJ, DATA_SUBSCRIBERS, DATA_TOPIC_UPDATE,
-    DEFAULT_ATTRIBUTION, DOMAIN)
+    DOMAIN)
 from homeassistant.const import ATTR_ATTRIBUTION, ATTR_LOCATION
 from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
@@ -20,6 +20,8 @@ _LOGGER = getLogger(__name__)
 ATTR_DESTINATION = 'destination_country'
 ATTR_INFO = 'info'
 ATTR_ORIGIN = 'origin_country'
+
+DEFAULT_ATTRIBUTION = 'Data provided by 17track.net'
 
 
 async def setup_platform(hass, config, add_devices, discovery_info=None):
