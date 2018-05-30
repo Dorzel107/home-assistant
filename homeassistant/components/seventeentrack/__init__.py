@@ -1,5 +1,5 @@
 """
-Support for package info from 17track.net
+Support for package info from 17track.net.
 
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/sensor.seventeentrack/
